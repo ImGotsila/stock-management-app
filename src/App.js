@@ -1,9 +1,10 @@
-// ไฟล์: src/App.js
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail'; // สมมติว่ามี ProductDetail แล้ว
+import AddProductForm from './components/AddProductForm'; // Added AddProductForm route
 import Dashboard from './components/Dashboard';
 import OrderList from './components/orders/OrderList';
 import OrderForm from './components/orders/OrderForm';
@@ -24,12 +25,14 @@ function App() {
           <OrderProvider>
             {/* แถบนำทาง (Navbar) จะแสดงอยู่ด้านบนของทุกหน้า */}
             <Navbar />
+            {/* The main content area, with a responsive container */}
             <div className="container mx-auto p-4">
               {/* กำหนดเส้นทางสำหรับหน้าต่างๆ */}
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/products" element={<ProductList />} />
                 <Route path="/products/:productId" element={<ProductDetail />} /> {/* สำหรับหน้าแสดงรายละเอียดสินค้า */}
+                <Route path="/products/new" element={<AddProductForm />} /> {/* Route for adding new product */}
                 <Route path="/orders" element={<OrderList />} />
                 <Route path="/orders/new" element={<OrderForm />} />
                 <Route path="/orders/:orderId/print" element={<OrderPrint />} />
@@ -45,4 +48,4 @@ function App() {
   );
 }
 
-export default App;
+export default App

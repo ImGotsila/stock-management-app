@@ -1,13 +1,13 @@
-// ==================== src/components/ProductList.js ====================
+// src/components/ProductList.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Search, RefreshCw } from 'lucide-react';
+import { Package, Search, RefreshCw, PlusCircle } from 'lucide-react'; // Added PlusCircle icon
 import { useStock } from '../context/StockContext';
 
 const ProductList = () => {
   const { getProductsWithStock, resetData } = useStock();
   // เรียกใช้ getProductsWithStock ใน useEffect เพื่อให้ได้ข้อมูลล่าสุด
-  const [products, setProducts] = useState([]); 
+  const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
@@ -34,9 +34,9 @@ const ProductList = () => {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.productId.toLowerCase().includes(searchTerm.toLowerCase());
+                          product.productId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -69,6 +69,11 @@ const ProductList = () => {
             </div>
           </div>
           <div className="header-actions">
+            {/* NEW: Add Product Button */}
+            <Link to="/products/new" className="add-product-btn">
+              <PlusCircle size={16} />
+              เพิ่มสินค้าใหม่
+            </Link>
             <button onClick={handleRefresh} className="refresh-btn">
               <RefreshCw size={16} />
               รีเฟรช
@@ -90,7 +95,7 @@ const ProductList = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -131,8 +136,8 @@ const ProductList = () => {
           {filteredProducts.map(product => (
             <div key={product.productId} className="product-card">
               <div className="product-image">
-                <img 
-                  src={product.imageUrl} 
+                <img
+                  src={product.imageUrl}
                   alt={product.productName}
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -143,21 +148,21 @@ const ProductList = () => {
                   📷
                 </div>
               </div>
-              
+
               <div className="product-info">
                 <div className="product-name">{product.productName}</div>
                 <div className="product-id">รหัส: {product.productId}</div>
                 <div className="product-category">{product.category}</div>
-                
+
                 <div className="stock-info">
                   <span className="stock-label">สต็อกคงเหลือ:</span>
                   <span className={`stock-count ${getStockClass(product.totalStock || 0)}`}> {/* ตรวจสอบ totalStock */}
                     {product.totalStock || 0}
                   </span>
                 </div>
-                
-                <Link 
-                  to={`/products/${product.productId}`} 
+
+                <Link
+                  to={`/products/${product.productId}`}
                   className="manage-btn"
                 >
                   จัดการสต็อก
@@ -171,4 +176,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default ProductList

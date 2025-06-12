@@ -1,4 +1,4 @@
-// ไฟล์: src/context/StockContext.js
+// src/context/StockContext.js
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const StockContext = createContext();
@@ -29,14 +29,14 @@ export const StockProvider = ({ children }) => {
       setProducts(productsData); // products state will hold this combined data
 
       // CORRECTED: Fetch raw stock data from /api/stock_raw endpoint
-      const rawStockRes = await fetch(`${API_BASE_URL}/stock_raw`); 
+      const rawStockRes = await fetch(`${API_BASE_URL}/stock_raw`);
       const rawStockData = await rawStockRes.json();
       setStock(rawStockData); // Store raw stock data
 
       const logsRes = await fetch(`${API_BASE_URL}/logs`);
       const logsData = await logsRes.json();
       setLogs(logsData);
-      
+
       setIsDataLoaded(true);
       console.log("Data fetched from Express Backend.");
     } catch (error) {
@@ -97,7 +97,7 @@ export const StockProvider = ({ children }) => {
       if (!productToUpdate) throw new Error("Product not found.");
 
       let newAvailableSizes = [...(productToUpdate.availableSizes || [])];
-      
+
       if (action === 'add' && !newAvailableSizes.includes(size)) {
         newAvailableSizes.push(size);
         newAvailableSizes.sort(); // Sort sizes for consistency
@@ -107,7 +107,7 @@ export const StockProvider = ({ children }) => {
         // For removing a size and its stock entry, you'd need to send a specific request to backend.
         // For simplicity, here we update sizes in frontend and let backend handle stock cleanup if size removed.
       }
-      
+
       // Send a PUT request to update product's availableSizes
       const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
         method: 'PUT',
@@ -159,11 +159,61 @@ export const StockProvider = ({ children }) => {
     }
   };
 
+  // NEW: Function to add a new product
+  const addProduct = async (newProductData) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProductData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to add product');
+      }
+      fetchData(); // Re-fetch all data to update state and include the new product
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error("Error adding product via API:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+
   // Reset all data (requires API endpoint)
   const resetData = async () => {
-    if (!window.confirm("คุณแน่ใจหรือไม่ที่จะรีเซ็ตข้อมูลทั้งหมด? ข้อมูลปัจจุบันในระบบจะถูกลบ!")) {
+    // IMPORTANT: Replaced window.confirm with a custom dialog for consistency with Canvas guidelines.
+    // This frontend code assumes a backend endpoint for reset-data exists.
+    const confirmed = await new Promise((resolve) => {
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-overlay';
+      dialog.innerHTML = `
+        <div class="dialog-content">
+          <p class="text-lg text-gray-700">คุณแน่ใจหรือไม่ที่จะรีเซ็ตข้อมูลทั้งหมด? ข้อมูลปัจจุบันในระบบจะถูกลบ!</p>
+          <div class="flex justify-center space-x-4 mt-4">
+            <button class="dialog-button bg-red-500 hover:bg-red-600" id="confirmResetBtn">ยืนยัน</button>
+            <button class="dialog-button bg-gray-500 hover:bg-gray-600" id="cancelResetBtn">ยกเลิก</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+
+      document.getElementById('confirmResetBtn').onclick = () => {
+        dialog.remove();
+        resolve(true);
+      };
+      document.getElementById('cancelResetBtn').onclick = () => {
+        dialog.remove();
+        resolve(false);
+      };
+    });
+
+    if (!confirmed) {
       return;
     }
+
     try {
       const res = await fetch(`${API_BASE_URL}/reset-data`, { method: 'POST' }); // Assumes you create this endpoint
       if (!res.ok) {
@@ -171,11 +221,32 @@ export const StockProvider = ({ children }) => {
         throw new Error(errorData.message || 'Failed to reset data');
       }
       fetchData(); // Re-fetch all data to update state
-      alert('รีเซ็ตข้อมูลเรียบร้อยแล้ว!');
+
+      // IMPORTANT: Replaced alert with custom dialog for consistency with Canvas guidelines.
+      const successDialog = document.createElement('div');
+      successDialog.className = 'dialog-overlay';
+      successDialog.innerHTML = `
+        <div class="dialog-content">
+          <p class="text-lg text-green-700">รีเซ็ตข้อมูลเรียบร้อยแล้ว!</p>
+          <button class="dialog-button" onclick="this.closest('.dialog-overlay').remove()">ตกลง</button>
+        </div>
+      `;
+      document.body.appendChild(successDialog);
+
       return { success: true };
     } catch (error) {
       console.error("Error resetting data via API:", error);
-      alert(`ไม่สามารถรีเซ็ตข้อมูลได้: ${error.message}`);
+      // IMPORTANT: Replaced alert with custom dialog for consistency with Canvas guidelines.
+      const errorDialog = document.createElement('div');
+      errorDialog.className = 'dialog-overlay';
+      errorDialog.innerHTML = `
+        <div class="dialog-content">
+          <p class="text-lg text-red-700">ไม่สามารถรีเซ็ตข้อมูลได้: ${error.message}</p>
+          <button class="dialog-button" onclick="this.closest('.dialog-overlay').remove()">ตกลง</button>
+        </div>
+      `;
+      document.body.appendChild(errorDialog);
+
       return { success: false, message: error.message };
     }
   };
@@ -188,8 +259,9 @@ export const StockProvider = ({ children }) => {
     getProductDetail,
     updateStock,
     updateProductQuantity,
-    addOrRemoveProductSize, 
-    updateProductPrice,     
+    addOrRemoveProductSize,
+    updateProductPrice,
+    addProduct, // NEW: Add addProduct to the context value
     resetData,
     isDataLoaded
   };

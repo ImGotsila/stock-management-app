@@ -1,4 +1,4 @@
-// ไฟล์: src/components/ProductDetail.js
+/ src/components/ProductDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStock } from '../context/StockContext';
@@ -11,8 +11,8 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [quantityInput, setQuantityInput] = useState(1); 
-  const [notification, setNotification] = useState(null); 
+  const [quantityInput, setQuantityInput] = useState(1);
+  const [notification, setNotification] = useState(null);
 
   // States สำหรับการแก้ไขราคาแต่ละขนาด
   const [editingSizePrice, setEditingSizePrice] = useState(null); // เก็บขนาดที่กำลังแก้ไขราคา เช่น 'S', 'M'
@@ -41,7 +41,7 @@ const ProductDetail = () => {
     const result = await updateStock(productId, size, change, change > 0 ? 'เพิ่มสต็อก' : 'ลดสต็อก');
     if (result.success) {
       // ดึงข้อมูลสินค้าล่าสุดหลังจากอัปเดตสต็อก เพื่อให้ product state อัปเดต
-      setProduct(getProductDetail(productId)); 
+      setProduct(getProductDetail(productId));
       showNotification('success', result.message);
     } else {
       showNotification('error', result.message);
@@ -57,7 +57,7 @@ const ProductDetail = () => {
 
     const change = type === 'add' ? quantity : -quantity;
     await handleUpdateStock(size, change); // เรียกใช้ handleUpdateStock
-    setQuantityInput(1); 
+    setQuantityInput(1);
   };
 
   // ===============================================
@@ -80,9 +80,9 @@ const ProductDetail = () => {
     }
 
     const result = await updateProductPrice(
-      productId, 
-      newRetail, 
-      newWholesale, 
+      productId,
+      newRetail,
+      newWholesale,
       size, // ส่ง size ไปด้วย
       { retailPrice: newRetail, wholesalePrice: newWholesale } // ส่ง object ราคาของขนาดนั้นๆ
     );
@@ -122,7 +122,7 @@ const ProductDetail = () => {
     );
   }
 
-  const productAvailableSizes = product.availableSizes || []; 
+  const productAvailableSizes = product.availableSizes || [];
 
   return (
     <div className="container">
@@ -139,9 +139,9 @@ const ProductDetail = () => {
       <div className="product-detail">
         <div className="product-header">
           <div className="product-image-large">
-            <img 
-              src={product.imageUrl} 
-              alt={product.productName} 
+            <img
+              src={product.imageUrl}
+              alt={product.productName}
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
@@ -170,7 +170,7 @@ const ProductDetail = () => {
           <div className="size-grid">
             {productAvailableSizes.map(size => {
               const currentStock = product.stockBySize?.[size] || 0;
-              const sizePriceInfo = product.pricesBySize?.[size]; 
+              const sizePriceInfo = product.pricesBySize?.[size];
               const retailPrice = sizePriceInfo?.retailPrice || 0;
               const wholesalePrice = sizePriceInfo?.wholesalePrice || 0;
 
@@ -222,42 +222,42 @@ const ProductDetail = () => {
                       </>
                     )}
                   </div>
-                  
+
                   {/* Stock Update Controls */}
                   {!isEditing && ( // ซ่อนปุ่มอัปเดตสต็อกเมื่ออยู่ในโหมดแก้ไขราคา
                     <>
                       <div className="quick-controls">
-                        <button 
-                          onClick={() => handleUpdateStock(size, -1)} 
+                        <button
+                          onClick={() => handleUpdateStock(size, -1)}
                           disabled={currentStock <= 0}
                           className="control-btn decrease-btn"
                         >
                           <MinusCircle size={20} />
                         </button>
-                        <button 
-                          onClick={() => handleUpdateStock(size, 1)} 
+                        <button
+                          onClick={() => handleUpdateStock(size, 1)}
                           className="control-btn increase-btn"
                         >
                           <PlusCircle size={20} />
                         </button>
                       </div>
                       <div className="bulk-controls">
-                        <input 
-                          type="number" 
-                          min="1" 
-                          value={quantityInput} 
+                        <input
+                          type="number"
+                          min="1"
+                          value={quantityInput}
                           onChange={(e) => setQuantityInput(parseInt(e.target.value) || 1)}
                           className="quantity-input"
                         />
                         <div className="bulk-buttons">
-                          <button 
-                            onClick={() => handleBulkUpdateStock(size, 'add')} 
+                          <button
+                            onClick={() => handleBulkUpdateStock(size, 'add')}
                             className="bulk-btn bulk-add"
                           >
                             เพิ่ม
                           </button>
-                          <button 
-                            onClick={() => handleBulkUpdateStock(size, 'subtract')} 
+                          <button
+                            onClick={() => handleBulkUpdateStock(size, 'subtract')}
                             disabled={currentStock < quantityInput}
                             className="bulk-btn bulk-subtract"
                           >
