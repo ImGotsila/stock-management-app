@@ -1,6 +1,6 @@
 // ไฟล์: src/context/OrderContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
+import './App.css'; // ตรวจสอบว่ามีบรรทัดนี้อยู่
 const OrderContext = createContext();
 
 export const useOrder = () => {

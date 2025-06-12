@@ -1,6 +1,7 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css'; // ตรวจสอบว่ามีบรรทัดนี้อยู่
 import Navbar from './components/Navbar';
 import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail'; // สมมติว่ามี ProductDetail แล้ว
@@ -11,7 +12,6 @@ import OrderForm from './components/orders/OrderForm';
 import OrderPrint from './components/orders/OrderPrint';
 import CustomerList from './components/customers/CustomerList';
 import CustomerForm from './components/customers/CustomerForm';
-import './App.css'; // ตรวจสอบว่ามีบรรทัดนี้อยู่
 import { StockProvider } from './context/StockContext';
 import { OrderProvider } from './context/OrderContext';
 import { CustomerProvider } from './context/CustomerContext';

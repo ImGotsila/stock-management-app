@@ -1,6 +1,6 @@
 // ไฟล์: src/context/CustomerContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
+import './App.css'; // ตรวจสอบว่ามีบรรทัดนี้อยู่
 const CustomerContext = createContext();
 
 export const useCustomer = () => {
