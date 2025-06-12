@@ -3,6 +3,6 @@ import App from './App';
 
 test('renders navbar brand text', () => {
   render(<App />);
-  const brandElement = screen.getByText(/ระบบจัดการสต็อก/);
+  const brandElement = screen.getByText('ระบบจัดการสต็อก', { exact: false });
   expect(brandElement).toBeInTheDocument();
 });
