@@ -1,0 +1,44 @@
+[
+  {
+    "productId": "SHIRT001",
+    "productName": "เสื้อยืดสีขาว Premium",
+    "imageUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+    "category": "เสื้อยืด",
+    "availableSizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "productId": "SHIRT002", 
+    "productName": "เสื้อเชิ้ตน้ำเงิน Oxford",
+    "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400",
+    "category": "เสื้อเชิ้ต",
+    "availableSizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "productId": "PANTS001",
+    "productName": "กางเกงยีนส์ Slim Fit",
+    "imageUrl": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400", 
+    "category": "กางเกง",
+    "availableSizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "productId": "JACKET001",
+    "productName": "แจ็คเก็ตหนัง Vintage",
+    "imageUrl": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400",
+    "category": "แจ็คเก็ต",
+    "availableSizes": ["S", "M", "L", "XL"]
+  },
+  {
+    "productId": "DRESS001",
+    "productName": "เดรสลำลอง Summer",
+    "imageUrl": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400",
+    "category": "เดรส",
+    "availableSizes": ["S", "M", "L", "XL", "XXL"]
+  },
+  {
+    "productId": "SHOE001",
+    "productName": "รองเท้าผ้าใบ Classic",
+    "imageUrl": "https://images.unsplash.com/photo-1542291026-7871b68995a9?w=400",
+    "category": "รองเท้า",
+    "availableSizes": ["36", "37", "38", "39", "40", "41", "42"]
+  }
+]

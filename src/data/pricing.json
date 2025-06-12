@@ -1,0 +1,60 @@
+[
+  {
+    "productId": "SHIRT001",
+    "sizes": [
+      { "size": "S", "retailPrice": 120, "wholesalePrice": 100 },
+      { "size": "M", "retailPrice": 125, "wholesalePrice": 105 },
+      { "size": "L", "retailPrice": 130, "wholesalePrice": 110 },
+      { "size": "XL", "retailPrice": 135, "wholesalePrice": 115 }
+    ]
+  },
+  {
+    "productId": "SHIRT002", 
+    "sizes": [
+      { "size": "S", "retailPrice": 250, "wholesalePrice": 220 },
+      { "size": "M", "retailPrice": 260, "wholesalePrice": 230 },
+      { "size": "L", "retailPrice": 270, "wholesalePrice": 240 },
+      { "size": "XL", "retailPrice": 280, "wholesalePrice": 250 }
+    ]
+  },
+  {
+    "productId": "PANTS001",
+    "sizes": [
+      { "size": "S", "retailPrice": 450, "wholesalePrice": 400 },
+      { "size": "M", "retailPrice": 460, "wholesalePrice": 410 },
+      { "size": "L", "retailPrice": 470, "wholesalePrice": 420 },
+      { "size": "XL", "retailPrice": 480, "wholesalePrice": 430 }
+    ]
+  },
+  {
+    "productId": "JACKET001",
+    "sizes": [
+      { "size": "S", "retailPrice": 1800, "wholesalePrice": 1500 },
+      { "size": "M", "retailPrice": 1850, "wholesalePrice": 1550 },
+      { "size": "L", "retailPrice": 1900, "wholesalePrice": 1600 },
+      { "size": "XL", "retailPrice": 1950, "wholesalePrice": 1650 }
+    ]
+  },
+  {
+    "productId": "DRESS001",
+    "sizes": [
+      { "size": "S", "retailPrice": 550, "wholesalePrice": 500 },
+      { "size": "M", "retailPrice": 560, "wholesalePrice": 510 },
+      { "size": "L", "retailPrice": 570, "wholesalePrice": 520 },
+      { "size": "XL", "retailPrice": 580, "wholesalePrice": 530 },
+      { "size": "XXL", "retailPrice": 590, "wholesalePrice": 540 }
+    ]
+  },
+  {
+    "productId": "SHOE001",
+    "sizes": [
+      { "size": "36", "retailPrice": 800, "wholesalePrice": 700 },
+      { "size": "37", "retailPrice": 810, "wholesalePrice": 710 },
+      { "size": "38", "retailPrice": 820, "wholesalePrice": 720 },
+      { "size": "39", "retailPrice": 830, "wholesalePrice": 730 },
+      { "size": "40", "retailPrice": 840, "wholesalePrice": 740 },
+      { "size": "41", "retailPrice": 850, "wholesalePrice": 750 },
+      { "size": "42", "retailPrice": 860, "wholesalePrice": 760 }
+    ]
+  }
+]

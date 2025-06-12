@@ -1,0 +1,35 @@
+[
+  { "productId": "SHIRT001", "size": "S", "stock": 15 },
+  { "productId": "SHIRT001", "size": "M", "stock": 25 },
+  { "productId": "SHIRT001", "size": "L", "stock": 30 },
+  { "productId": "SHIRT001", "size": "XL", "stock": 10 },
+  
+  { "productId": "SHIRT002", "size": "S", "stock": 8 },
+  { "productId": "SHIRT002", "size": "M", "stock": 18 },
+  { "productId": "SHIRT002", "size": "L", "stock": 22 },
+  { "productId": "SHIRT002", "size": "XL", "stock": 5 },
+  
+  { "productId": "PANTS001", "size": "S", "stock": 12 },
+  { "productId": "PANTS001", "size": "M", "stock": 20 },
+  { "productId": "PANTS001", "size": "L", "stock": 18 },
+  { "productId": "PANTS001", "size": "XL", "stock": 8 },
+  
+  { "productId": "JACKET001", "size": "S", "stock": 5 },
+  { "productId": "JACKET001", "size": "M", "stock": 12 },
+  { "productId": "JACKET001", "size": "L", "stock": 15 },
+  { "productId": "JACKET001", "size": "XL", "stock": 7 },
+  
+  { "productId": "DRESS001", "size": "S", "stock": 20 },
+  { "productId": "DRESS001", "size": "M", "stock": 25 },
+  { "productId": "DRESS001", "size": "L", "stock": 18 },
+  { "productId": "DRESS001", "size": "XL", "stock": 10 },
+  { "productId": "DRESS001", "size": "XXL", "stock": 5 },
+
+  { "productId": "SHOE001", "size": "36", "stock": 10 },
+  { "productId": "SHOE001", "size": "37", "stock": 15 },
+  { "productId": "SHOE001", "size": "38", "stock": 20 },
+  { "productId": "SHOE001", "size": "39", "stock": 18 },
+  { "productId": "SHOE001", "size": "40", "stock": 12 },
+  { "productId": "SHOE001", "size": "41", "stock": 8 },
+  { "productId": "SHOE001", "size": "42", "stock": 3 }
+]
