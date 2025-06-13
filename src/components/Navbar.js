@@ -1,7 +1,7 @@
-// src/components/Navbar.js (สร้างใหม่)
+// ไฟล์: src/components/Navbar.js (ปรับปรุง)
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, Package, ShoppingCart, Users, Plus, FilePlus } from 'lucide-react'; // Import FilePlus icon for "Add Product"
+import { BarChart3, Package, ShoppingCart, Users, Plus } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -14,38 +14,41 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="navbar">
-      <div className="navbar-brand">
-        <h1>🛍️ ระบบจัดการสต็อก</h1>
-      </div>
-
-      <div className="navbar-menu">
-        {navItems.map(item => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`navbar-item ${isActive ? 'active' : ''}`}
-            >
-              <Icon size={18} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-
-        {/* NEW: Link for adding a new product */}
-        <Link to="/products/new" className={`navbar-item ${location.pathname === '/products/new' ? 'active' : ''}`}>
-          <FilePlus size={18} /> {/* Using FilePlus icon */}
-          <span>เพิ่มสินค้าใหม่</span>
+    <nav className="navbar navbar-expand-lg"> {/* ใช้ Bootstrap navbar classes */}
+      <div className="container-fluid"> {/* เพิ่ม container-fluid */}
+        <Link to="/" className="navbar-brand text-white"> {/* ใช้ navbar-brand และ text-white */}
+          <h1>🛍️ ระบบจัดการสต็อก</h1>
         </Link>
-
-        <Link to="/orders/new" className="navbar-item create-order">
-          <Plus size={18} />
-          <span>สร้างคำสั่งซื้อ</span>
-        </Link>
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav w-100"> {/* ใช้ w-100 เพื่อให้เต็มความกว้าง */}
+            {navItems.map(item => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <li className="nav-item" key={item.path}> {/* ใช้ nav-item */}
+                  <Link 
+                    to={item.path} 
+                    className={`nav-link text-white ${isActive ? 'active' : ''}`} // ใช้ nav-link และ text-white
+                  >
+                    <Icon size={18} className="me-2" /> {/* เพิ่ม me-2 สำหรับ margin-right */}
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+            
+            <li className="nav-item ms-auto"> {/* ใช้ ms-auto เพื่อจัดชิดขวา */}
+              <Link to="/orders/new" className="btn btn-warning text-dark d-flex align-items-center"> {/* เปลี่ยนเป็นปุ่ม Bootstrap */}
+                <Plus size={18} className="me-2" />
+                สร้างคำสั่งซื้อ
+              </Link>
+            </li>
+          </ul>
+        </div>
       </div>
     </nav>
   );

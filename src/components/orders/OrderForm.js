@@ -44,8 +44,6 @@ const OrderForm = () => {
   const [orderItems, setOrderItems] = useState([]);
   const [notes, setNotes] = useState("");
 
-  // ตัวเลือกสำหรับ dropdown ลูกค้า
-  // ย้ายการสร้าง customerOptions มาไว้ที่นี่ เพื่อให้สามารถเข้าถึง customers ได้อย่างถูกต้อง
   const customerOptions = customers.map((cust) => ({
     value: cust.customerId,
     label: `${cust.customerName} (${
@@ -56,16 +54,13 @@ const OrderForm = () => {
     ...cust,
   }));
 
-  // คำนวณราคาต่อหน่วยสำหรับสินค้าที่เลือก โดยอิงจากประเภทลูกค้า
   const getUnitPrice = (product, size, customerType) => {
-    // เพิ่ม size parameter
-    const priceInfo = product.pricesBySize?.[size]; // ดึงราคาจาก pricesBySize
+    const priceInfo = product.pricesBySize?.[size];
     if (priceInfo) {
       return customerType === "wholesale"
         ? priceInfo.wholesalePrice
         : priceInfo.retailPrice;
     }
-    // Fallback หากหาราคาตามขนาดไม่เจอ
     return product.retailPrice || 0;
   };
 
@@ -88,7 +83,7 @@ const OrderForm = () => {
       productToAdd,
       size,
       selectedCustomer.customerType
-    ); // ส่ง size ไปด้วย
+    );
 
     if (existingItemIndex > -1) {
       const currentQuantityInCart = orderItems[existingItemIndex].quantity;
@@ -225,19 +220,17 @@ const OrderForm = () => {
 
   if (customers.length === 0) {
     return (
-      <div className="order-form no-customer-state">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">
-          ไม่พบข้อมูลลูกค้า
-        </h2>
-        <p className="text-gray-700 mb-4">
+      <div className="card shadow-sm p-4 text-center">
+        <h2 className="text-danger mb-3">ไม่พบข้อมูลลูกค้า</h2>
+        <p className="text-muted mb-4">
           โปรดเพิ่มข้อมูลลูกค้าอย่างน้อยหนึ่งรายในเมนู "ลูกค้า"
           ก่อนจึงจะสามารถสร้างคำสั่งซื้อได้
         </p>
         <button
           onClick={() => navigate("/customers/new")}
-          className="submit-btn"
+          className="btn btn-primary d-inline-flex align-items-center justify-content-center"
         >
-          <UserPlus size={20} />
+          <UserPlus size={20} className="me-2" />
           <span>เพิ่มลูกค้าใหม่</span>
         </button>
       </div>
@@ -245,20 +238,24 @@ const OrderForm = () => {
   }
 
   return (
-    <div className="order-form">
-      <div className="order-header">
-        <h2>
-          <ShoppingCart size={28} />
+    <div className="card shadow-sm p-4">
+      <div className="card-header bg-white mb-4">
+        <h2 className="h3 text-dark d-flex align-items-center">
+          <ShoppingCart size={28} className="me-2" />
           <span>สร้างคำสั่งซื้อใหม่</span>
         </h2>
       </div>
       <form onSubmit={handleSubmit}>
-        {/* ส่วนข้อมูลลูกค้าและวันที่ */}
-        <div className="customer-section">
-          <label>เลือกลูกค้า:</label>
+        <div className="mb-4 p-3 border rounded">
+          <label
+            htmlFor="customer-select"
+            className="form-label d-flex align-items-center gap-2 fw-bold"
+          >
+            เลือกลูกค้า:
+          </label>
           <Select
             id="customer-select"
-            options={customerOptions} // customerOptions ถูกเรียกใช้งานที่นี่
+            options={customerOptions}
             onChange={setSelectedCustomer}
             value={selectedCustomer}
             placeholder="เลือกลูกค้า"
@@ -267,27 +264,28 @@ const OrderForm = () => {
             classNamePrefix="select"
           />
           {selectedCustomer && (
-            <div className="customer-info">
-              <p>
+            <div className="bg-light p-3 rounded mt-3">
+              <p className="mb-1">
                 <strong>ผู้ติดต่อ:</strong> {selectedCustomer.contactPerson}
               </p>
-              <p>
+              <p className="mb-1">
                 <strong>เบอร์โทร:</strong> {selectedCustomer.phone}
               </p>
-              <p>
+              <p className="mb-1">
                 <strong>ส่วนลด:</strong> {selectedCustomer.discountRate || 0}%
               </p>
-              <p>
+              <p className="mb-0">
                 <strong>ที่อยู่:</strong> {selectedCustomer.address}
               </p>
             </div>
           )}
         </div>
 
-        {/* Date pickers */}
-        <div className="additional-info">
-          <div className="form-group">
-            <label>วันที่สั่งซื้อ:</label>
+        <div className="row g-3 mb-4 p-3 border rounded">
+          <div className="col-md-6">
+            <label htmlFor="order-date" className="form-label">
+              วันที่สั่งซื้อ:
+            </label>
             <DatePicker
               id="order-date"
               selected={orderDate}
@@ -296,8 +294,10 @@ const OrderForm = () => {
               className="form-control"
             />
           </div>
-          <div className="form-group">
-            <label>วันที่จัดส่ง:</label>
+          <div className="col-md-6">
+            <label htmlFor="delivery-date" className="form-label">
+              วันที่จัดส่ง:
+            </label>
             <DatePicker
               id="delivery-date"
               selected={deliveryDate}
@@ -308,49 +308,58 @@ const OrderForm = () => {
           </div>
         </div>
 
-        {/* ส่วนเลือกสินค้า */}
-        <div className="product-section">
-          <h3>
+        <div className="mb-4 p-3 border rounded">
+          <h3 className="h5 d-flex align-items-center gap-2 mb-3">
             <Package size={20} />
             <span>เลือกสินค้า</span>
           </h3>
-          <div className="products-grid">
+          <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
             {availableProducts.map((product) => {
               if (!product) return null;
 
               return (
-                <div key={product.productId} className="product-card-mini">
-                  <img src={product.imageUrl} alt={product.productName} />
-                  <h4>{product.productName}</h4>
-                  <p>รหัส: {product.productId}</p>
+                <div key={product.productId} className="col">
+                  <div className="card h-100 text-center">
+                    <img
+                      src={product.imageUrl}
+                      className="card-img-top"
+                      alt={product.productName}
+                      style={{ height: "120px", objectFit: "cover" }}
+                    />
+                    <div className="card-body d-flex flex-column">
+                      <h5 className="card-title text-truncate">
+                        {product.productName}
+                      </h5>
+                      <p className="card-subtitle mb-2 text-muted small">
+                        รหัส: {product.productId}
+                      </p>
+                      <div className="d-flex flex-wrap justify-content-center gap-2 mt-auto">
+                        {product.availableSizes?.map((size) => {
+                          const stock = product.stockBySize?.[size] || 0;
+                          const priceInfo = product.pricesBySize?.[size];
+                          const price = selectedCustomer
+                            ? selectedCustomer.customerType === "wholesale"
+                              ? priceInfo?.wholesalePrice
+                              : priceInfo?.retailPrice
+                            : priceInfo?.retailPrice || 0;
 
-                  <div className="size-options">
-                    {product.availableSizes?.map((size) => {
-                      // ใช้ availableSizes
-                      const stock = product.stockBySize?.[size] || 0;
-                      // ดึงราคาจาก pricesBySize
-                      const priceInfo = product.pricesBySize?.[size];
-                      const price = selectedCustomer
-                        ? selectedCustomer.customerType === "wholesale"
-                          ? priceInfo?.wholesalePrice
-                          : priceInfo?.retailPrice
-                        : priceInfo?.retailPrice || 0;
-
-                      return (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => handleAddItem(product, size)}
-                          disabled={stock <= 0 || !selectedCustomer}
-                          className="size-btn"
-                        >
-                          {size} ({stock} ชิ้น) ฿
-                          {typeof price === "number" && !isNaN(price)
-                            ? price.toLocaleString()
-                            : "0"}
-                        </button>
-                      );
-                    })}
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => handleAddItem(product, size)}
+                              disabled={stock <= 0 || !selectedCustomer}
+                              className="btn btn-outline-info btn-sm"
+                            >
+                              {size} ({stock} ชิ้น) ฿
+                              {typeof price === "number" && !isNaN(price)
+                                ? price.toLocaleString()
+                                : "0"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -358,70 +367,85 @@ const OrderForm = () => {
           </div>
         </div>
 
-        {/* ตารางตะกร้าสินค้า */}
-        <div className="cart-section">
-          <h3>ตะกร้าสินค้า ({orderItems.length} รายการ)</h3>
+        <div className="mb-4 p-3 border rounded">
+          <h3 className="h5 mb-3">ตะกร้าสินค้า ({orderItems.length} รายการ)</h3>
           {orderItems.length === 0 ? (
-            <p>ยังไม่มีสินค้าในตะกร้า</p>
+            <div className="alert alert-secondary text-center" role="alert">
+              ยังไม่มีสินค้าในตะกร้า
+            </div>
           ) : (
-            <div className="cart-items">
+            <ul className="list-group">
               {orderItems.map((item, index) => {
                 if (!item) return null;
                 return (
-                  <div
+                  <li
                     key={`${item.productId}-${item.size}-${index}`}
-                    className="cart-item"
+                    className="list-group-item d-flex justify-content-between align-items-center"
                   >
-                    <span>
-                      {item.productName} (ขนาด {item.size})
-                    </span>
-                    <div className="quantity-controls">
+                    <div>
+                      <h6 className="mb-1">
+                        {item.productName} (ขนาด {item.size})
+                      </h6>
+                      <small className="text-muted">
+                        ฿{item.unitPrice.toLocaleString()}/ชิ้น
+                      </small>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <div
+                        className="btn-group me-2"
+                        role="group"
+                        aria-label="Quantity controls"
+                      >
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleQuantityChange(index, item.quantity - 1)
+                          }
+                          disabled={item.quantity <= 1}
+                          className="btn btn-outline-secondary btn-sm"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="btn btn-light btn-sm disabled">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleQuantityChange(index, item.quantity + 1)
+                          }
+                          className="btn btn-outline-secondary btn-sm"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      <span className="fw-bold me-3">
+                        {typeof item.totalPrice === "number" &&
+                        !isNaN(item.totalPrice)
+                          ? item.totalPrice.toLocaleString("th-TH", {
+                              style: "currency",
+                              currency: "THB",
+                            })
+                          : "0"}
+                      </span>
                       <button
                         type="button"
-                        onClick={() =>
-                          handleQuantityChange(index, item.quantity - 1)
-                        }
-                        disabled={item.quantity <= 1}
+                        onClick={() => handleRemoveItem(index)}
+                        className="btn btn-danger btn-sm"
                       >
-                        <Minus size={18} />
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleQuantityChange(index, item.quantity + 1)
-                        }
-                      >
-                        <Plus size={18} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
-                    <span>
-                      {typeof item.totalPrice === "number" &&
-                      !isNaN(item.totalPrice)
-                        ? item.totalPrice.toLocaleString("th-TH", {
-                            style: "currency",
-                            currency: "THB",
-                          })
-                        : "0"}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(index)}
-                      className="remove-btn"
-                    >
-                      ลบ
-                    </button>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </div>
 
-        {/* ส่วนสรุปยอด */}
-        <div className="order-summary">
-          <h3>สรุปคำสั่งซื้อ</h3>
-          <div className="summary-row">
+        <div className="mb-4 p-3 border rounded bg-light">
+          <h3 className="h5 mb-3">สรุปคำสั่งซื้อ</h3>
+          <div className="d-flex justify-content-between mb-2">
             <span>ยอดรวม:</span>
             <span>
               {typeof subtotal === "number" && !isNaN(subtotal)
@@ -432,7 +456,7 @@ const OrderForm = () => {
                 : "0"}
             </span>
           </div>
-          <div className="summary-row discount">
+          <div className="d-flex justify-content-between text-danger mb-2">
             <span>ส่วนลด ({selectedCustomer?.discountRate || 0}%):</span>
             <span>
               -{" "}
@@ -444,7 +468,7 @@ const OrderForm = () => {
                 : "0"}
             </span>
           </div>
-          <div className="summary-row">
+          <div className="d-flex justify-content-between mb-2">
             <span>VAT (7%):</span>
             <span>
               {typeof vatAmount === "number" && !isNaN(vatAmount)
@@ -455,7 +479,7 @@ const OrderForm = () => {
                 : "0"}
             </span>
           </div>
-          <div className="summary-row total">
+          <div className="d-flex justify-content-between border-top pt-2 fw-bold fs-5">
             <span>ยอดรวมสุทธิ:</span>
             <span>
               {typeof grandTotal === "number" && !isNaN(grandTotal)
@@ -468,24 +492,24 @@ const OrderForm = () => {
           </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="additional-info">
-          <div className="form-group">
-            <label>หมายเหตุ:</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="หมายเหตุเพิ่มเติม..."
-              className="form-control"
-            />
-          </div>
+        <div className="mb-4 p-3 border rounded">
+          <label htmlFor="notes" className="form-label">
+            หมายเหตุ:
+          </label>
+          <textarea
+            id="notes"
+            rows="3"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="หมายเหตุเพิ่มเติม..."
+            className="form-control"
+          />
         </div>
 
-        {/* Submit Button */}
-        <div className="form-actions">
+        <div className="text-center">
           <button
-            onClick={handleSubmit}
-            className="submit-btn"
+            type="submit"
+            className="btn btn-primary btn-lg"
             disabled={!selectedCustomer || orderItems.length === 0}
           >
             สร้างคำสั่งซื้อ

@@ -1,105 +1,99 @@
-// src/components/ProductList.js
+// ==================== src/components/ProductList.js ====================
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Search, RefreshCw, PlusCircle } from 'lucide-react'; // Added PlusCircle icon
+import { Package, Search, RefreshCw } from 'lucide-react';
 import { useStock } from '../context/StockContext';
 
 const ProductList = () => {
   const { getProductsWithStock, resetData } = useStock();
-  // เรียกใช้ getProductsWithStock ใน useEffect เพื่อให้ได้ข้อมูลล่าสุด
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // ใช้ useEffect เพื่อโหลดและอัปเดต products เมื่อ getProductsWithStock เปลี่ยนแปลง (เช่น สต็อกถูกอัปเดต)
   useEffect(() => {
     setLoading(true);
-    // Simulate loading time
     setTimeout(() => {
       setProducts(getProductsWithStock());
       setLoading(false);
-    }, 300); // ลดเวลาจำลองการโหลด
-  }, [getProductsWithStock]); // Dependency array: จะรัน effect นี้เมื่อ getProductsWithStock เปลี่ยนแปลง
+    }, 300);
+  }, [getProductsWithStock]);
 
   const getStockClass = (stock) => {
-    if (stock >= 50) return 'stock-high';
-    if (stock >= 20) return 'stock-medium';
-    if (stock >= 10) return 'stock-low';
-    return 'stock-critical';
+    if (stock >= 50) return 'bg-success';
+    if (stock >= 20) return 'bg-warning text-dark';
+    if (stock >= 10) return 'bg-danger';
+    return 'bg-dark'; // critical
   };
 
-  // กรองหมวดหมู่ที่ไม่ซ้ำกัน
-  const categories = ['', ...new Set(products.map(p => p.category).filter(Boolean))]; // filter(Boolean) เพื่อกรอง undefined/null
+  const categories = ['', ...new Set(products.map(p => p.category).filter(Boolean))];
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.productId.toLowerCase().includes(searchTerm.toLowerCase());
+                         product.productId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
-
+    
     return matchesSearch && matchesCategory;
   });
 
   const handleRefresh = () => {
     setLoading(true);
     setTimeout(() => {
-      setProducts(getProductsWithStock()); // โหลดข้อมูลใหม่
+      setProducts(getProductsWithStock());
       setLoading(false);
     }, 300);
   };
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>กำลังโหลดข้อมูลสินค้า...</p>
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">กำลังโหลดข้อมูลสินค้า...</p>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      <div className="header">
-        <div className="header-content">
-          <div className="header-title">
-            <Package size={32} />
+    <div className="container py-4"> {/* Use Bootstrap container and padding */}
+      <div className="p-4 bg-primary text-white rounded-3 shadow-sm mb-4"> {/* Bootstrap header styling */}
+        <div className="d-flex justify-content-between align-items-center flex-wrap">
+          <div className="d-flex align-items-center mb-3 mb-md-0">
+            <Package size={32} className="me-3" />
             <div>
-              <h1>🛍️ ระบบจัดการสต็อกเสื้อผ้า</h1>
-              <p>จัดการสินค้าและติดตามสต็อกได้อย่างง่ายดาย</p>
+              <h1 className="h3 mb-1">🛍️ ระบบจัดการสต็อกเสื้อผ้า</h1>
+              <p className="lead mb-0">จัดการสินค้าและติดตามสต็อกได้อย่างง่ายดาย</p>
             </div>
           </div>
-          <div className="header-actions">
-            {/* NEW: Add Product Button */}
-            <Link to="/products/new" className="add-product-btn">
-              <PlusCircle size={16} />
-              เพิ่มสินค้าใหม่
-            </Link>
-            <button onClick={handleRefresh} className="refresh-btn">
-              <RefreshCw size={16} />
+          <div className="d-flex gap-2">
+            <button onClick={handleRefresh} className="btn btn-outline-light d-flex align-items-center">
+              <RefreshCw size={16} className="me-2" />
               รีเฟรช
             </button>
-            <button onClick={resetData} className="reset-btn">
+            <button onClick={resetData} className="btn btn-outline-light">
               รีเซ็ตข้อมูล
             </button>
           </div>
         </div>
       </div>
 
-      <div className="filters">
-        <div className="search-box">
-          <Search size={20} />
+      <div className="d-flex flex-wrap gap-3 mb-4"> {/* Bootstrap flexbox for filters */}
+        <div className="input-group flex-grow-1"> {/* Bootstrap input group */}
+          <span className="input-group-text"><Search size={20} /></span>
           <input
             type="text"
+            className="form-control"
             placeholder="ค้นหาสินค้า..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-
+        
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="category-filter"
+          className="form-select flex-shrink-0" style={{ maxWidth: '200px' }}
         >
           <option value="">ทุกหมวดหมู่</option>
           {categories.slice(1).map(category => (
@@ -108,65 +102,80 @@ const ProductList = () => {
         </select>
       </div>
 
-      <div className="stats">
-        <div className="stat-item">
-          <span className="stat-number">{products.length}</span>
-          <span className="stat-label">สินค้าทั้งหมด</span>
+      <div className="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4"> {/* Bootstrap grid for stats */}
+        <div className="col">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h5 className="card-title display-6 mb-1">{products.length}</h5>
+              <p className="card-text text-muted">สินค้าทั้งหมด</p>
+            </div>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-number">
-            {products.reduce((sum, p) => sum + (p.totalStock || 0), 0)} {/* ตรวจสอบ totalStock */}
-          </span>
-          <span className="stat-label">สต็อกรวม</span>
+        <div className="col">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h5 className="card-title display-6 mb-1">
+                {products.reduce((sum, p) => sum + (p.totalStock || 0), 0)}
+              </h5>
+              <p className="card-text text-muted">สต็อกรวม</p>
+            </div>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-number">{categories.length - 1}</span>
-          <span className="stat-label">หมวดหมู่</span>
+        <div className="col">
+          <div className="card text-center shadow-sm h-100">
+            <div className="card-body">
+              <h5 className="card-title display-6 mb-1">{categories.length - 1}</h5>
+              <p className="card-text text-muted">หมวดหมู่</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {filteredProducts.length === 0 ? (
-        <div className="empty-state">
-          <Package size={64} />
-          <h3>ไม่พบสินค้า</h3>
-          <p>ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น</p>
+        <div className="text-center py-5 bg-white rounded-3 shadow-sm">
+          <Package size={64} className="text-muted opacity-50 mb-3" />
+          <h3 className="text-muted">ไม่พบสินค้า</h3>
+          <p className="text-muted">ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น</p>
         </div>
       ) : (
-        <div className="products-grid">
+        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"> {/* Bootstrap grid for products */}
           {filteredProducts.map(product => (
-            <div key={product.productId} className="product-card">
-              <div className="product-image">
-                <img
-                  src={product.imageUrl}
-                  alt={product.productName}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div className="no-image" style={{display: 'none'}}>
-                  📷
+            <div key={product.productId} className="col">
+              <div className="card h-100 shadow-sm transition-transform">
+                <div className="product-image-container overflow-hidden rounded-top" style={{ height: '250px' }}>
+                  <img 
+                    src={product.imageUrl} 
+                    className="card-img-top h-100 w-100 object-fit-cover" 
+                    alt={product.productName}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="no-image h-100 w-100 position-absolute top-0 start-0 bg-light justify-content-center align-items-center" style={{display: 'none'}}>
+                    <span className="text-muted opacity-50 fs-1">📷</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="product-info">
-                <div className="product-name">{product.productName}</div>
-                <div className="product-id">รหัส: {product.productId}</div>
-                <div className="product-category">{product.category}</div>
-
-                <div className="stock-info">
-                  <span className="stock-label">สต็อกคงเหลือ:</span>
-                  <span className={`stock-count ${getStockClass(product.totalStock || 0)}`}> {/* ตรวจสอบ totalStock */}
-                    {product.totalStock || 0}
-                  </span>
+                
+                <div className="card-body d-flex flex-column">
+                  <h5 className="card-title text-truncate">{product.productName}</h5>
+                  <p className="card-subtitle mb-2 text-muted small">รหัส: {product.productId}</p>
+                  <p className="card-text text-uppercase text-info fw-bold">{product.category}</p>
+                  
+                  <div className="d-flex justify-content-between align-items-center mt-auto py-2 px-3 bg-light rounded-pill">
+                    <span className="text-muted fw-bold">สต็อกคงเหลือ:</span>
+                    <span className={`badge rounded-pill ${getStockClass(product.totalStock || 0)}`}>
+                      {product.totalStock || 0}
+                    </span>
+                  </div>
+                  
+                  <Link 
+                    to={`/products/${product.productId}`} 
+                    className="btn btn-primary mt-3 text-uppercase fw-bold"
+                  >
+                    จัดการสต็อก
+                  </Link>
                 </div>
-
-                <Link
-                  to={`/products/${product.productId}`}
-                  className="manage-btn"
-                >
-                  จัดการสต็อก
-                </Link>
               </div>
             </div>
           ))}
@@ -176,4 +185,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList
+export default ProductList;

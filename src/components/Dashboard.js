@@ -23,10 +23,10 @@ import {
 } from "lucide-react";
 import { useOrder } from "../context/OrderContext";
 import { useStock } from "../context/StockContext";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom"; 
 
 const Dashboard = () => {
-  const { orders, updateOrderStatus, getOrdersWithDetails } = useOrder();
+  const { orders, updateOrderStatus } = useOrder();
   const { products, getProductsWithStock } = useStock();
 
   const productsWithStock = getProductsWithStock();
@@ -34,7 +34,7 @@ const Dashboard = () => {
   const [dateRange, setDateRange] = useState("7");
   const [loading, setLoading] = useState(true);
 
-  // Function to filter orders based on timeframe
+  // Function to filter orders based on timeframe (keeping original logic)
   const filterOrdersByTimeframe = (allOrders, currentFilter) => {
     const now = new Date();
     return allOrders.filter((order) => {
@@ -209,11 +209,11 @@ const Dashboard = () => {
     actions = [{ label: "ตกลง", onClick: () => {} }]
   ) => {
     const dialogOverlay = document.createElement("div");
-    dialogOverlay.className = "modal-backdrop fade show"; // Bootstrap modal backdrop
+    dialogOverlay.className = "modal-backdrop fade show"; 
     document.body.appendChild(dialogOverlay);
 
     const modal = document.createElement("div");
-    modal.className = "modal fade show d-block"; // d-block to force display
+    modal.className = "modal fade show d-block"; 
     modal.tabIndex = -1;
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-labelledby", "customDialogLabel");
@@ -246,7 +246,6 @@ const Dashboard = () => {
       </div>
     `;
 
-    // Append buttons to modal-footer
     const modalFooter = modal.querySelector(".modal-footer");
     actions.forEach((action) => {
       const button = document.createElement("button");
@@ -283,7 +282,6 @@ const Dashboard = () => {
       statusOptions.find((opt) => opt.value === currentStatus)?.label ||
       "ไม่ระบุสถานะ";
 
-    // Create a custom status selection dialog
     const statusDialog = document.createElement("div");
     statusDialog.className = "modal fade show d-block";
     statusDialog.tabIndex = -1;
@@ -326,12 +324,11 @@ const Dashboard = () => {
     backdrop.className = "modal-backdrop fade show";
     document.body.appendChild(backdrop);
 
-    // Add event listeners to status buttons
     statusDialog.querySelectorAll(".status-select-button").forEach((button) => {
       button.onclick = async () => {
         const newStatus = button.dataset.status;
-        statusDialog.remove(); // Close status selection dialog
-        backdrop.remove(); // Remove backdrop
+        statusDialog.remove(); 
+        backdrop.remove(); 
 
         if (newStatus === currentStatus) {
           showCustomDialog(
@@ -370,7 +367,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="loading-container text-center py-5">
+      <div className="d-flex flex-column justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -381,10 +378,8 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard container-fluid py-4">
-      {" "}
-      {/* Use container-fluid for full width, py-4 for padding */}
-      <div className="dashboard-header bg-primary text-white p-4 rounded shadow-sm mb-4 d-flex justify-content-between align-items-center">
-        <h1 className="h3 mb-0">📊 Dashboard และรายงาน</h1>
+      <div className="bg-primary text-white p-4 rounded shadow-sm mb-4 d-flex justify-content-between align-items-center">
+        <h1 className="h3 mb-0">📊 Dashboard และรายงาน ออเดอร์</h1>
         <div className="date-filter d-flex align-items-center">
           <label htmlFor="timeframe-select" className="me-2 mb-0">
             ช่วงเวลา:
@@ -403,18 +398,14 @@ const Dashboard = () => {
       </div>
       {/* สถิติหลัก */}
       <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
-        {" "}
-        {/* Bootstrap grid for stats */}
         <div className="col">
           <div className="card shadow-sm h-100">
             <div className="card-body d-flex align-items-center">
               <div className="stat-icon bg-gradient-primary rounded p-3 me-3">
-                {" "}
-                {/* Custom gradient class */}
                 <DollarSign size={24} />
               </div>
               <div className="stat-content">
-                <h3 className="card-title text-uppercase text-muted mb-0">
+                <h3 className="card-title text-uppercase text-muted mb-0 fs-6">
                   ยอดขายรวม
                 </h3>
                 <p className="h4 card-text mb-0 text-dark">
@@ -434,12 +425,10 @@ const Dashboard = () => {
           <div className="card shadow-sm h-100">
             <div className="card-body d-flex align-items-center">
               <div className="stat-icon bg-gradient-pink rounded p-3 me-3">
-                {" "}
-                {/* Custom gradient class */}
                 <ShoppingCart size={24} />
               </div>
               <div className="stat-content">
-                <h3 className="card-title text-uppercase text-muted mb-0">
+                <h3 className="card-title text-uppercase text-muted mb-0 fs-6">
                   จำนวนคำสั่งซื้อ
                 </h3>
                 <p className="h4 card-text mb-0 text-dark">
@@ -454,12 +443,10 @@ const Dashboard = () => {
           <div className="card shadow-sm h-100">
             <div className="card-body d-flex align-items-center">
               <div className="stat-icon bg-gradient-info rounded p-3 me-3">
-                {" "}
-                {/* Custom gradient class */}
                 <Package size={24} />
               </div>
               <div className="stat-content">
-                <h3 className="card-title text-uppercase text-muted mb-0">
+                <h3 className="card-title text-uppercase text-muted mb-0 fs-6">
                   สินค้าที่ขาย
                 </h3>
                 <p className="h4 card-text mb-0 text-dark">
@@ -474,12 +461,10 @@ const Dashboard = () => {
           <div className="card shadow-sm h-100">
             <div className="card-body d-flex align-items-center">
               <div className="stat-icon bg-gradient-success rounded p-3 me-3">
-                {" "}
-                {/* Custom gradient class */}
                 <TrendingUp size={24} />
               </div>
               <div className="stat-content">
-                <h3 className="card-title text-uppercase text-muted mb-0">
+                <h3 className="card-title text-uppercase text-muted mb-0 fs-6">
                   ยอดขายเฉลี่ย
                 </h3>
                 <p className="h4 card-text mb-0 text-dark">
@@ -609,14 +594,12 @@ const Dashboard = () => {
               )}
               <div className="d-flex flex-wrap justify-content-center mt-3">
                 {" "}
-                {/* Bootstrap flex classes */}
                 {getCategoryData().map((entry, index) => (
                   <div
                     key={entry.name}
                     className="d-flex align-items-center me-3 mb-2"
                   >
                     {" "}
-                    {/* Bootstrap flex classes */}
                     <span
                       className="me-2 rounded"
                       style={{
@@ -654,14 +637,8 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="table-responsive">
-                  {" "}
-                  {/* Bootstrap for responsive table */}
                   <table className="table table-hover table-striped table-bordered align-middle">
-                    {" "}
-                    {/* Bootstrap table classes */}
                     <thead className="table-light">
-                      {" "}
-                      {/* Bootstrap table header light */}
                       <tr>
                         <th scope="col" className="text-start">
                           สินค้า
