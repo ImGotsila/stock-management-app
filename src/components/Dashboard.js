@@ -1,4 +1,4 @@
-// src/components/Dashboard.js
+// src/components/Dashboard.js (เฉพาะส่วนที่แก้ไข)
 import React, { useState, useEffect } from "react";
 import {
   BarChart,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useOrder } from "../context/OrderContext";
 import { useStock } from "../context/StockContext";
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const { orders, updateOrderStatus } = useOrder();
@@ -209,11 +209,11 @@ const Dashboard = () => {
     actions = [{ label: "ตกลง", onClick: () => {} }]
   ) => {
     const dialogOverlay = document.createElement("div");
-    dialogOverlay.className = "modal-backdrop fade show"; 
+    dialogOverlay.className = "modal-backdrop fade show";
     document.body.appendChild(dialogOverlay);
 
     const modal = document.createElement("div");
-    modal.className = "modal fade show d-block"; 
+    modal.className = "modal fade show d-block";
     modal.tabIndex = -1;
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-labelledby", "customDialogLabel");
@@ -327,8 +327,8 @@ const Dashboard = () => {
     statusDialog.querySelectorAll(".status-select-button").forEach((button) => {
       button.onclick = async () => {
         const newStatus = button.dataset.status;
-        statusDialog.remove(); 
-        backdrop.remove(); 
+        statusDialog.remove();
+        backdrop.remove();
 
         if (newStatus === currentStatus) {
           showCustomDialog(
