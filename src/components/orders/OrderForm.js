@@ -19,7 +19,7 @@ import {
 
 const OrderForm = () => {
   const navigate = useNavigate();
-  const { getProductsWithStock, updateProductQuantity } = useStock();
+  const { getProductsWithStock, updateStock } = useStock(); // Changed updateProductQuantity to updateStock
   const { customers } = useCustomer();
   const { addOrder } = useOrder();
 
@@ -43,6 +43,7 @@ const OrderForm = () => {
   const [deliveryDate, setDeliveryDate] = useState(new Date());
   const [orderItems, setOrderItems] = useState([]);
   const [notes, setNotes] = useState("");
+  const [notification, setNotification] = useState(null); // Add notification state
 
   const customerOptions = customers.map((cust) => ({
     value: cust.customerId,
@@ -54,6 +55,19 @@ const OrderForm = () => {
     ...cust,
   }));
 
+  /**
+   * Displays a notification message to the user.
+   * @param {string} type - 'success' or 'error'
+   * @param {string} message - The message content.
+   */
+  const showNotification = (type, message) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
+
   const getUnitPrice = (product, size, customerType) => {
     const priceInfo = product.pricesBySize?.[size];
     if (priceInfo) {
@@ -61,12 +75,15 @@ const OrderForm = () => {
         ? priceInfo.wholesalePrice
         : priceInfo.retailPrice;
     }
-    return product.retailPrice || 0;
+    // Fallback for products without sizes or if size not found in pricesBySize
+    return customerType === "wholesale"
+        ? product.wholesalePrice || 0
+        : product.retailPrice || 0;
   };
 
   const handleAddItem = (productToAdd, size) => {
     if (!selectedCustomer) {
-      alert("โปรดเลือกลูกค้าก่อนเพิ่มสินค้า");
+      showNotification("error", "โปรดเลือกลูกค้าก่อนเพิ่มสินค้า");
       return;
     }
 
@@ -88,7 +105,8 @@ const OrderForm = () => {
     if (existingItemIndex > -1) {
       const currentQuantityInCart = orderItems[existingItemIndex].quantity;
       if (currentQuantityInCart + 1 > productStock) {
-        alert(
+        showNotification(
+          "error",
           `สินค้า ${productToAdd.productName} (ขนาด ${size}) มีสต็อกไม่เพียงพอ มีเพียง ${productStock} ชิ้น`
         );
         return;
@@ -106,7 +124,8 @@ const OrderForm = () => {
       );
     } else {
       if (1 > productStock) {
-        alert(
+        showNotification(
+          "error",
           `สินค้า ${productToAdd.productName} (ขนาด ${size}) มีสต็อกไม่เพียงพอ มีเพียง ${productStock} ชิ้น`
         );
         return;
@@ -118,6 +137,7 @@ const OrderForm = () => {
           productId: productToAdd.productId,
           productName: productToAdd.productName,
           size,
+          imageUrl: productToAdd.imageUrl, // Add imageUrl to item for potential print view
           quantity: 1,
           unitPrice,
           totalPrice: unitPrice * 1,
@@ -140,7 +160,8 @@ const OrderForm = () => {
       currentProductInStock?.stockBySize?.[itemToUpdate.size] || 0;
 
     if (quantity > productStock) {
-      alert(
+      showNotification(
+        "error",
         `สินค้า ${itemToUpdate.productName} (ขนาด ${itemToUpdate.size}) มีสต็อกไม่เพียงพอ มีเพียง ${productStock} ชิ้น`
       );
       itemToUpdate.quantity = productStock;
@@ -166,15 +187,16 @@ const OrderForm = () => {
   const vatAmount = totalAfterDiscount * 0.07;
   const grandTotal = totalAfterDiscount + vatAmount;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setNotification(null); // Clear previous notifications
 
     if (!selectedCustomer) {
-      alert("โปรดเลือกลูกค้า");
+      showNotification("error", "โปรดเลือกลูกค้า");
       return;
     }
     if (orderItems.length === 0) {
-      alert("โปรดเพิ่มสินค้าในคำสั่งซื้อ");
+      showNotification("error", "โปรดเพิ่มสินค้าในคำสั่งซื้อ");
       return;
     }
 
@@ -183,7 +205,8 @@ const OrderForm = () => {
         (p) => p.productId === item.productId
       );
       if (product && item.quantity > (product.stockBySize?.[item.size] || 0)) {
-        alert(
+        showNotification(
+          "error",
           `สินค้า ${item.productName} (ขนาด ${
             item.size
           }) มีสต็อกไม่เพียงพอ มีเพียง ${product.stockBySize[item.size]} ชิ้น`
@@ -208,14 +231,18 @@ const OrderForm = () => {
       status: "pending",
     };
 
-    addOrder(newOrder);
+    const result = await addOrder(newOrder);
 
-    orderItems.forEach((item) => {
-      updateProductQuantity(item.productId, item.size, -item.quantity);
-    });
-
-    alert("สร้างคำสั่งซื้อสำเร็จ!");
-    navigate("/orders");
+    if (result) {
+      // If order was added successfully, update stock
+      for (const item of orderItems) {
+        // Use updateStock from context
+        await updateStock(item.productId, item.size, -item.quantity, 'ขายออก');
+      }
+      showNotification("success", "สร้างคำสั่งซื้อสำเร็จ!");
+      navigate("/orders");
+    }
+    // Error alert is handled in addOrder function in OrderContext now
   };
 
   if (customers.length === 0) {
@@ -341,7 +368,7 @@ const OrderForm = () => {
                             ? selectedCustomer.customerType === "wholesale"
                               ? priceInfo?.wholesalePrice
                               : priceInfo?.retailPrice
-                            : priceInfo?.retailPrice || 0;
+                            : priceInfo?.retailPrice || product.retailPrice || 0; // Fallback to product.retailPrice
 
                           return (
                             <button
@@ -516,6 +543,17 @@ const OrderForm = () => {
           </button>
         </div>
       </form>
+
+      {/* Notification */}
+      {notification && (
+        <div
+          className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg text-white ${
+            notification.type === "success" ? "bg-green-500" : "bg-red-500"
+          } transition-opacity duration-300`}
+        >
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 };

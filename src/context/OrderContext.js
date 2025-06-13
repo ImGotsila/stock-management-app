@@ -1,6 +1,7 @@
 // ไฟล์: src/context/OrderContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import './App.css'; // ตรวจสอบว่ามีบรรทัดนี้อยู่
+// './App.css'; // บรรทัดนี้ถูกลบออกหรือคอมเมนต์ไว้แล้ว
+
 const OrderContext = createContext();
 
 export const useOrder = () => {
@@ -50,7 +51,7 @@ export const OrderProvider = ({ children }) => {
       return data;
     } catch (error) {
       console.error("Error adding order via API:", error);
-      alert(`ไม่สามารถเพิ่มคำสั่งซื้อได้: ${error.message}`);
+      // alert(`ไม่สามารถเพิ่มคำสั่งซื้อได้: ${error.message}`); // Removed alert
       return null;
     }
   };
@@ -69,7 +70,7 @@ export const OrderProvider = ({ children }) => {
       return data;
     } catch (error) {
       console.error("Error updating order status via API:", error);
-      alert(`ไม่สามารถอัปเดตสถานะคำสั่งซื้อได้: ${error.message}`);
+      // alert(`ไม่สามารถอัปเดตสถานะคำสั่งซื้อได้: ${error.message}`); // Removed alert
       return null;
     }
   };
@@ -88,7 +89,7 @@ export const OrderProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Error deleting order via API:", error);
-      alert(`ไม่สามารถลบคำสั่งซื้อได้: ${error.message}`);
+      // alert(`ไม่สามารถลบคำสั่งซื้อได้: ${error.message}`); // Removed alert
       return { success: false, message: error.message };
     }
   };

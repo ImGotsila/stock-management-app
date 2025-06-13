@@ -19,8 +19,21 @@ const CustomerForm = () => {
   const [discountRate, setDiscountRate] = useState(0);
   const [creditLimit, setCreditLimit] = useState(0);
   const [paymentTerms, setPaymentTerms] = useState("");
+  const [notification, setNotification] = useState(null); // Add notification state
 
   const isEditMode = !!customerId;
+
+  /**
+   * Displays a notification message to the user.
+   * @param {string} type - 'success' or 'error'
+   * @param {string} message - The message content.
+   */
+  const showNotification = (type, message) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
 
   useEffect(() => {
     if (isEditMode) {
@@ -36,7 +49,7 @@ const CustomerForm = () => {
         setCreditLimit(customerToEdit.creditLimit || 0);
         setPaymentTerms(customerToEdit.paymentTerms || "");
       } else {
-        alert("ไม่พบข้อมูลลูกค้าที่ต้องการแก้ไข");
+        showNotification("error", "ไม่พบข้อมูลลูกค้าที่ต้องการแก้ไข"); // Use showNotification
         navigate("/customers");
       }
     } else {
@@ -52,11 +65,12 @@ const CustomerForm = () => {
     }
   }, [isEditMode, customerId, customers, navigate, getCustomerById]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setNotification(null); // Clear previous notifications
 
     if (!customerName || !customerType || !contactPerson) {
-      alert("โปรดกรอกข้อมูลสำคัญ: ชื่อลูกค้า, ประเภทลูกค้า, ผู้ติดต่อ");
+      showNotification("error", "โปรดกรอกข้อมูลสำคัญ: ชื่อลูกค้า, ประเภทลูกค้า, ผู้ติดต่อ"); // Use showNotification
       return;
     }
 
@@ -72,15 +86,18 @@ const CustomerForm = () => {
       paymentTerms,
     };
 
+    let result = null;
     if (isEditMode) {
-      updateCustomer(customerId, customerData);
-      alert("อัปเดตข้อมูลลูกค้าสำเร็จ!");
+      result = await updateCustomer(customerId, customerData);
     } else {
-      addCustomer(customerData);
-      alert("เพิ่มลูกค้าใหม่สำเร็จ!");
+      result = await addCustomer(customerData);
     }
 
-    navigate("/customers");
+    if (result) {
+      showNotification("success", isEditMode ? "อัปเดตข้อมูลลูกค้าสำเร็จ!" : "เพิ่มลูกค้าใหม่สำเร็จ!"); // Use showNotification
+      navigate("/customers");
+    }
+    // Error handling is inside addCustomer/updateCustomer in context now
   };
 
   return (
@@ -233,6 +250,17 @@ const CustomerForm = () => {
           </button>
         </div>
       </form>
+
+      {/* Notification */}
+      {notification && (
+        <div
+          className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg text-white ${
+            notification.type === "success" ? "bg-green-500" : "bg-red-500"
+          } transition-opacity duration-300`}
+        >
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 // src/context/StockContext.js
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 
 const StockContext = createContext();
 
@@ -11,259 +11,216 @@ export const useStock = () => {
   return context;
 };
 
-// StockProvider จะไม่รับ db, auth, appId แล้ว
 export const StockProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
-  const [stock, setStock] = useState([]); // stock array (raw stock data)
-  const [logs, setLogs] = useState([]);
-  const [isDataLoaded, setIsDataLoaded] = useState(false); // สถานะบ่งชี้ว่าข้อมูลเริ่มต้นโหลดแล้ว
+  const [stockLogs, setStockLogs] = useState([]);
+  const [isProductsLoaded, setIsProductsLoaded] = useState(false);
 
   const API_BASE_URL = 'http://localhost:5000/api'; // Express API URL
 
-  // Function to fetch all data from Express API
+  // Fetch Products and Stock Logs
   const fetchData = useCallback(async () => {
     try {
-      // Products API now returns products combined with pricing and stock by size
+      // Fetch products
       const productsRes = await fetch(`${API_BASE_URL}/products`);
+      if (!productsRes.ok) throw new Error('Failed to fetch products');
       const productsData = await productsRes.json();
-      setProducts(productsData); // products state will hold this combined data
 
-      // CORRECTED: Fetch raw stock data from /api/stock_raw endpoint
-      const rawStockRes = await fetch(`${API_BASE_URL}/stock_raw`);
-      const rawStockData = await rawStockRes.json();
-      setStock(rawStockData); // Store raw stock data
-
-      const logsRes = await fetch(`${API_BASE_URL}/logs`);
+      // Fetch stock logs
+      const logsRes = await fetch(`${API_BASE_URL}/stock-logs`);
+      if (!logsRes.ok) throw new Error('Failed to fetch stock logs');
       const logsData = await logsRes.json();
-      setLogs(logsData);
 
-      setIsDataLoaded(true);
-      console.log("Data fetched from Express Backend.");
+      setStockLogs(logsData);
+
+      // Map stock data into products
+      const productsWithStock = productsData.map(product => {
+        const productLogs = logsData.filter(log => log.productId === product.productId);
+        const stockBySize = {};
+        let totalStock = 0;
+
+        // Calculate current stock for each size
+        if (product.availableSizes) {
+          product.availableSizes.forEach(size => {
+            const initialStock = product.initialStockBySize?.[size] || 0; // Use initialStockBySize from product
+            const sizeLogs = productLogs.filter(log => log.size === size);
+            const netChange = sizeLogs.reduce((sum, log) => sum + log.quantityChange, 0);
+            stockBySize[size] = initialStock + netChange;
+            totalStock += stockBySize[size];
+          });
+        }
+
+        return {
+          ...product,
+          stockBySize,
+          totalStock
+        };
+      });
+
+      setProducts(productsWithStock);
+      setIsProductsLoaded(true);
+      console.log("Products and Stock Logs fetched from Express Backend.");
     } catch (error) {
       console.error("Error fetching data from Express Backend:", error);
-      setIsDataLoaded(true); // Still set to true to avoid perpetual loading, but indicate error
+      setIsProductsLoaded(true); // Still set to true even if fetch fails
     }
   }, []);
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchData();
-    // เนื่องจาก Express.js ไม่รองรับ Real-time updates แบบ Firestore ได้โดยตรง
-    // คุณอาจต้องใช้ Polling หากต้องการอัปเดตข้อมูลแบบ Real-time มากขึ้น (แต่ไม่แนะนำสำหรับแอปขนาดเล็ก)
-    // const intervalId = setInterval(fetchData, 5000); // Fetch every 5 seconds
-    // return () => clearInterval(intervalId);
   }, [fetchData]);
 
-  // Helper to get products with combined stock (now relies on Express API returning combined data)
-  const getProductsWithStock = () => {
-    // If Express API returns combined products+stock, this is simpler
-    // Otherwise, you'd combine products and stock data here client-side
-    return products; // Assuming products state already has combined info from API
-  };
-
-  const getProductDetail = (productId) => {
-    return products.find(p => p.productId === productId); // Assuming products state has detail
-  };
-
-  const updateStock = async (productId, size, quantityChange, action) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/stock/${productId}/${size}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ quantityChange, action }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to update stock');
-      }
-      fetchData(); // Re-fetch all data to update state
-      return { success: true, message: data.message };
-    } catch (error) {
-      console.error("Error updating stock via API:", error);
-      return { success: false, message: error.message };
-    }
-  };
-
-  const updateProductQuantity = (productId, size, quantityChange) => {
-    return updateStock(productId, size, quantityChange, quantityChange < 0 ? 'ขายสินค้า' : 'เพิ่มสต็อก');
-  };
-
-  // Function to add or remove a size for a product
-  const addOrRemoveProductSize = async (productId, size, action) => { // 'add' or 'remove'
-    try {
-      const productToUpdate = products.find(p => p.productId === productId);
-      if (!productToUpdate) throw new Error("Product not found.");
-
-      let newAvailableSizes = [...(productToUpdate.availableSizes || [])];
-
-      if (action === 'add' && !newAvailableSizes.includes(size)) {
-        newAvailableSizes.push(size);
-        newAvailableSizes.sort(); // Sort sizes for consistency
-      } else if (action === 'remove') {
-        newAvailableSizes = newAvailableSizes.filter(s => s !== size);
-        // Backend's DELETE /api/stock/:productId/:size is designed for stock.
-        // For removing a size and its stock entry, you'd need to send a specific request to backend.
-        // For simplicity, here we update sizes in frontend and let backend handle stock cleanup if size removed.
-      }
-
-      // Send a PUT request to update product's availableSizes
-      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ availableSizes: newAvailableSizes }), // Send updated availableSizes
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to update sizes');
-      fetchData(); // Re-fetch all data to update state
-      return { success: true, message: data.message };
-    } catch (error) {
-      console.error("Error updating product sizes via API:", error);
-      return { success: false, message: error.message };
-    }
-  };
-
-  // Function to update product's overall retail/wholesale price or size-specific prices
-  const updateProductPrice = async (productId, newRetailPrice, newWholesalePrice, sizeToUpdate = null, newSizeSpecificPrices = null) => {
-    try {
-      const productToUpdate = products.find(p => p.productId === productId);
-      if (!productToUpdate) throw new Error("Product not found.");
-
-      let updatedPricesBySize = { ...productToUpdate.pricesBySize };
-      let updatedGeneralPrices = {};
-
-      if (sizeToUpdate && newSizeSpecificPrices) {
-        // Update specific size price
-        updatedPricesBySize[sizeToUpdate] = newSizeSpecificPrices;
-      } else {
-        // Update general prices if no specific size is mentioned
-        updatedGeneralPrices = { retailPrice: newRetailPrice, wholesalePrice: newWholesalePrice };
-      }
-
-      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...updatedGeneralPrices, // General prices (if provided)
-          pricesBySize: updatedPricesBySize // Updated size-specific prices
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to update prices');
-      fetchData(); // Re-fetch all data to update state
-      return { success: true, message: data.message };
-    } catch (error) {
-      console.error("Error updating product price via API:", error);
-      return { success: false, message: error.message };
-    }
-  };
-
-  // NEW: Function to add a new product
-  const addProduct = async (newProductData) => {
+  // Add Product
+  const addProduct = async (productData) => { // productData will be FormData
     try {
       const res = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProductData),
+        body: productData, // productData is already FormData
       });
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to add product');
-      }
-      fetchData(); // Re-fetch all data to update state and include the new product
-      return { success: true, message: data.message };
+      if (!res.ok) throw new Error(data.message || 'Failed to add product');
+      fetchData(); // Re-fetch to update state
+      console.log("Product added via API:", data);
+      return { success: true, product: data };
     } catch (error) {
       console.error("Error adding product via API:", error);
       return { success: false, message: error.message };
     }
   };
 
-
-  // Reset all data (requires API endpoint)
-  const resetData = async () => {
-    // IMPORTANT: Replaced window.confirm with a custom dialog for consistency with Canvas guidelines.
-    // This frontend code assumes a backend endpoint for reset-data exists.
-    const confirmed = await new Promise((resolve) => {
-      const dialog = document.createElement('div');
-      dialog.className = 'dialog-overlay';
-      dialog.innerHTML = `
-        <div class="dialog-content">
-          <p class="text-lg text-gray-700">คุณแน่ใจหรือไม่ที่จะรีเซ็ตข้อมูลทั้งหมด? ข้อมูลปัจจุบันในระบบจะถูกลบ!</p>
-          <div class="flex justify-center space-x-4 mt-4">
-            <button class="dialog-button bg-red-500 hover:bg-red-600" id="confirmResetBtn">ยืนยัน</button>
-            <button class="dialog-button bg-gray-500 hover:bg-gray-600" id="cancelResetBtn">ยกเลิก</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(dialog);
-
-      document.getElementById('confirmResetBtn').onclick = () => {
-        dialog.remove();
-        resolve(true);
-      };
-      document.getElementById('cancelResetBtn').onclick = () => {
-        dialog.remove();
-        resolve(false);
-      };
-    });
-
-    if (!confirmed) {
-      return;
-    }
-
+  // Update Product
+  const updateProduct = async (productId, productData) => { // productData will be FormData
     try {
-      const res = await fetch(`${API_BASE_URL}/reset-data`, { method: 'POST' }); // Assumes you create this endpoint
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to reset data');
-      }
-      fetchData(); // Re-fetch all data to update state
-
-      // IMPORTANT: Replaced alert with custom dialog for consistency with Canvas guidelines.
-      const successDialog = document.createElement('div');
-      successDialog.className = 'dialog-overlay';
-      successDialog.innerHTML = `
-        <div class="dialog-content">
-          <p class="text-lg text-green-700">รีเซ็ตข้อมูลเรียบร้อยแล้ว!</p>
-          <button class="dialog-button" onclick="this.closest('.dialog-overlay').remove()">ตกลง</button>
-        </div>
-      `;
-      document.body.appendChild(successDialog);
-
-      return { success: true };
+      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
+        method: 'PUT',
+        body: productData, // productData is already FormData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update product');
+      fetchData(); // Re-fetch to update state
+      console.log("Product updated via API:", data);
+      return { success: true, product: data };
     } catch (error) {
-      console.error("Error resetting data via API:", error);
-      // IMPORTANT: Replaced alert with custom dialog for consistency with Canvas guidelines.
-      const errorDialog = document.createElement('div');
-      errorDialog.className = 'dialog-overlay';
-      errorDialog.innerHTML = `
-        <div class="dialog-content">
-          <p class="text-lg text-red-700">ไม่สามารถรีเซ็ตข้อมูลได้: ${error.message}</p>
-          <button class="dialog-button" onclick="this.closest('.dialog-overlay').remove()">ตกลง</button>
-        </div>
-      `;
-      document.body.appendChild(errorDialog);
-
+      console.error("Error updating product via API:", error);
       return { success: false, message: error.message };
     }
   };
 
+  // Update Stock Quantity (existing function, ensure it logs to API)
+  const updateStock = async (productId, size, quantityChange, type) => {
+    try {
+      const logEntry = {
+        productId,
+        size,
+        quantityChange,
+        type, // 'เพิ่มสต็อก', 'ลดสต็อก', 'ขายออก', 'รับคืน'
+        timestamp: new Date().toISOString(),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/stock-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logEntry),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update stock');
+      fetchData(); // Re-fetch to update state and product stocks
+      console.log("Stock updated and logged via API:", data);
+      return { success: true, message: 'อัปเดตสต็อกเรียบร้อย' };
+    } catch (error) {
+      console.error("Error updating stock via API:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  // New function for updating product quantity (specifically for OrderForm)
+  const updateProductQuantity = async (productId, size, quantityChange) => {
+    // This function will directly call updateStock with a specific type
+    return await updateStock(productId, size, quantityChange, 'ขายออก');
+  };
+
+
+  // Update Product Price (existing function, ensure it calls API for product update)
+  const updateProductPrice = async (productId, retailPrice, wholesalePrice, size, pricesBySize) => {
+    try {
+      const product = products.find(p => p.productId === productId);
+      if (!product) throw new Error('Product not found');
+
+      // Prepare payload for product update
+      const updatePayload = {};
+
+      if (size) { // If updating a specific size's price
+        const updatedPricesBySize = { ...product.pricesBySize, [size]: { retailPrice, wholesalePrice } };
+        updatePayload.pricesBySize = updatedPricesBySize;
+      } else { // If updating base retail/wholesale price (for products without sizes)
+        updatePayload.retailPrice = retailPrice;
+        updatePayload.wholesalePrice = wholesalePrice;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatePayload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update product prices');
+      fetchData(); // Re-fetch to update state
+      console.log("Product prices updated via API:", data);
+      return { success: true, message: 'อัปเดตราคาเรียบร้อย' };
+    } catch (error) {
+      console.error("Error updating product prices via API:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  const getProductsWithStock = useCallback(() => products, [products]);
+  const getProductDetail = useCallback((productId) => products.find(p => p.productId === productId), [products]);
+  const getStockLogs = useCallback(() => stockLogs, [stockLogs]);
+  const getProductStockLogs = useCallback((productId) => stockLogs.filter(log => log.productId === productId), [stockLogs]);
+
+  // New: deleteProduct (if needed, otherwise remove from context if not used)
+  const deleteProduct = async (productId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to delete product');
+      }
+      fetchData(); // Re-fetch to update state
+      console.log("Product deleted via API:", productId);
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting product via API:", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  const resetData = () => {
+    // This function might need to call backend APIs to reset data,
+    // or you might remove it if you manage data persistence entirely via backend.
+    // For now, it will simply re-fetch data.
+    console.warn("Reset data initiated. Re-fetching data from backend.");
+    fetchData();
+  };
+
+
   const value = {
     products,
-    stock, // stock state will hold raw stock data
-    logs,
+    stockLogs,
+    isProductsLoaded,
     getProductsWithStock,
     getProductDetail,
+    getStockLogs,
+    getProductStockLogs,
     updateStock,
-    updateProductQuantity,
-    addOrRemoveProductSize,
     updateProductPrice,
-    addProduct, // NEW: Add addProduct to the context value
+    addProduct,
+    updateProduct,
+    deleteProduct,
     resetData,
-    isDataLoaded
+    updateProductQuantity // Expose the new function
   };
 
   return (
