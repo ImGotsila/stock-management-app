@@ -3,7 +3,6 @@ import React, { useState } from "react"; // Import useState
 import { useOrder } from "../../context/OrderContext";
 import { Link, useNavigate } from "react-router-dom";
 import { Printer, Trash2, PlusCircle, ShoppingCart } from "lucide-react";
-import { format } from "date-fns";
 
 const OrderList = () => {
   const { orders, deleteOrder, isOrdersLoaded } = useOrder();
@@ -131,12 +130,12 @@ const OrderList = () => {
                     </td>
                     <td className="text-nowrap">
                       {order.orderDate
-                        ? format(new Date(order.orderDate), "dd/MM/yyyy")
+                        ? new Date(order.orderDate).toLocaleDateString("th-TH")
                         : "-"}
                     </td>
                     <td className="text-nowrap">
                       {order.deliveryDate
-                        ? format(new Date(order.deliveryDate), "dd/MM/yyyy")
+                        ? new Date(order.deliveryDate).toLocaleDateString("th-TH")
                         : "-"}
                     </td>
                     <td className="text-nowrap">
