@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useStock } from "../../context/StockContext";
 import { useCustomer } from "../../context/CustomerContext";
 import { useOrder } from "../../context/OrderContext";
-import { format } from "date-fns";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -218,8 +217,8 @@ const OrderForm = () => {
     const newOrder = {
       customerId: selectedCustomer.value,
       customerInfo: selectedCustomer,
-      orderDate: format(orderDate, "yyyy-MM-dd"),
-      deliveryDate: format(deliveryDate, "yyyy-MM-dd"),
+      orderDate: orderDate.toISOString().split("T")[0],
+      deliveryDate: deliveryDate.toISOString().split("T")[0],
       items: orderItems,
       subtotal,
       discountPercent: effectiveDiscountRate,
